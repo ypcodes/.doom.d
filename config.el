@@ -21,9 +21,9 @@
 ;; See 'C-h v doom-font' for documentation and more examples of what they
 ;; accept. For example:
 ;;
-(setq! doom-font (font-spec :family "FiraCode Nerd Font" :size 15  :weight 'semi-light)
-      doom-variable-pitch-font (font-spec :family "FiraCode Nerd Font" :size 15)
-      doom-unicode-font (font-spec :family "FiraCode Nerd Font" :size 15))
+(setq! doom-font (font-spec :family "MesloLGM Nerd Font" :size 18  :weight 'semi-light)
+      doom-variable-pitch-font (font-spec :family "FiraCode Nerd Font" :size 18)
+      doom-unicode-font (font-spec :family "FiraCode Nerd Font" :size 18))
 ;;
 ;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
 ;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
@@ -33,7 +33,7 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-one)
+(setq doom-theme 'doom-tokyo-night)
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
@@ -42,12 +42,13 @@
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
 (setq org-directory "~/org/")
+(setq org-html-head-extra "<link rel=\"stylesheet\" href=\"https://unpkg.com/marx-css/css/marx.css\" type=\"text/css\">")
 
 ;; (setq default-frame-alist
 ;;       (append (list
-;; 	       ;; '(font . "Roboto Mono Emacs Regular:size=14")
-;; 	       '(min-height . 1)  '(height     . 30)
-;; 	       '(min-width  . 1) '(width      . 60)
+;;             ;; '(font . "Roboto Mono Emacs Regular:size=14")
+;;             '(min-height . 1)  '(height     . 30)
+;;             '(min-width  . 1) '(width      . 60)
 ;;                '(vertical-scroll-bars . nil)
 ;;                '(internal-border-width . 35)
 ;;                '(left-fringe    . 0)
@@ -91,15 +92,18 @@
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
 (setq gc-cons-threshold (* 50 1000 1000))
-(setq-default custom-file (expand-file-name ".custom.el" doom-private-dir))
+(setq-default custom-file (expand-file-name ".custom.el" doom-user-dir))
 (when (file-exists-p custom-file)
   (load custom-file))
 
 (display-time-mode t)
 (display-battery-mode 1)
 (doom/set-frame-opacity '90)
+(set-frame-parameter (selected-frame) 'alpha '(90 95))
+(add-to-list 'default-frame-alist '(alpha 90 95))
 (setq initial-major-mode 'org-mode)
 (setq browse-url-handlers '(("\\`file:" . browse-url-default-browser)))
+(setq-default default-input-method "rime")
 
 ;; Profile emacs startup
 (setq confirm-kill-emacs nil
@@ -153,10 +157,111 @@
      tab-mark         ; tabs (show by symbol)
      )))
 
+;; set `i' enter emacs-state
 (after! evil
   (defalias 'evil-insert-state 'evil-emacs-state)
   (define-key evil-emacs-state-map (kbd "<escape>") 'evil-normal-state)
   (setq evil-emacs-state-cursor 'bar))
+
+(after! ox-hugo
+  (setq org-hugo-base-dir "~/Dev/blog")
+  (setq org-hugo-auto-set-lastmod t))
+
+(use-package! rime
+  :config
+  (setq rime-user-data-dir "~/.config/fcitx/rime")
+  ;; (setq rime-posframe-properties
+  ;;       (list :background-color "#333333"
+  ;;             :foreground-color "#dcdccc"
+  ;;             ;; :font "WenQuanYi Micro Hei Mono-15"
+  ;;             :internal-border-width 10))
+  (setq rime-show-candidate 'posframe)
+  (setq rime-inline-ascii-trigger 'shift-l)
+  (define-key rime-mode-map (kbd "M-j") 'rime-force-enable)
+  (setq mode-line-mule-info '((:eval (rime-lighter))))
+  (setq rime-disable-predicates
+        '(rime-predicate-evil-mode-p
+          rime-predicate-after-alphabet-char-p
+          rime-predicate-prog-in-code-p
+          rime-predicate-after-alphabet-char-p)))
+
+
+;; (use-package! nov
+;;   :config
+;;   (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
+;;   (defun my-nov-font-setup ()
+;;   ;; (face-remap-add-relative 'variable-pitch :family ""
+;;   ;;                                          :height 1.0))
+;; (add-hook 'nov-mode-hook 'my-nov-font-setup)))
+
+;; (use-package! nov-xwidget
+;;   :after nov
+;;   :config
+;;   (define-key nov-mode-map (kbd "o") 'nov-xwidget-view)
+;;   (add-hook 'nov-mode-hook 'nov-xwidget-inject-all-files))
+
+(use-package! eaf
+  :load-path "~/.elisp/emacs-application-framework"
+  :init
+  :custom
+  (eaf-browser-continue-where-left-off t)
+  (eaf-browser-enable-adblocker t)
+  (browse-url-browser-function 'eaf-open-browser) ;; Make EAF Browser my default browser
+  :config
+
+  (defalias 'browse-web #'eaf-open-browser)
+  (setq eaf-browser-continue-where-left-off t)
+  ;; (require 'eaf-file-manager)
+  ;; (require 'eaf-music-player)
+  ;; (require 'eaf-image-viewer)
+  ;; (require 'eaf-camera)
+  ;; (require 'eaf-demo)
+  ;; (require 'eaf-terminal)
+  ;; (require 'eaf-video-player)
+  ;; (require 'eaf-vue-demo)
+  ;; (require 'eaf-file-sender)
+  ;; (require 'eaf-mindmap)
+  ;; (require 'eaf-jupyter)
+  ;; (require 'eaf-org-previewer)
+  ;; (require 'eaf-system-monitor)
+  ;; (require 'eaf-rss-reader)
+  ;; (require 'eaf-file-browser)
+  ;; (require 'eaf-mail)
+  ;; (require 'eaf-git)
+  (require 'eaf-browser)
+  (require 'eaf-pdf-viewer)
+  (require 'eaf-markdown-previewer)
+  (require 'eaf-org-previewer)
+  (require 'eaf-airshare)
+  (require 'eaf-terminal)
+  (require 'eaf-file-manager)
+  ;; (require 'eaf-netease-cloud-music)
+  (require 'eaf-video-player)
+  (require 'eaf-image-viewer)
+
+  (when (display-graphic-p)
+    (require 'eaf-all-the-icons))
+
+  (require 'eaf-evil)
+  (setq eaf-browser-dark-mode nil)
+  (setq eaf-terminal-dark-mode nil)
+  (setq eaf-pdf-dark-mode "ignore") ; see below
+  (defun adviser-find-file (orig-fn file &rest args)
+    (let ((fn (if (commandp 'eaf-open) 'eaf-open orig-fn)))
+    (pcase (file-name-extension file)
+      ("pdf"  (apply fn file nil))
+      ("epub" (apply fn file nil))
+      (_      (apply orig-fn file args))
+      )))
+  (advice-add #'find-file :around #'adviser-find-file)
+  (setq browse-url-browser-function 'eaf-open-browser)
+  (defalias 'browse-web #'eaf-open-browser)
+  (setq eaf-browser-enable-adblocker t)
+  (setq eaf-browser-default-search-engine "google")
+  (setq eaf-proxy-type "http")
+  (setq eaf-proxy-host "127.0.0.1")
+  (setq eaf-proxy-port "7890")
+  (global-set-key (kbd "C-s") 'eaf-search-it))
 
 (set-eshell-alias!
  "yt" "youtube-dl $*"
@@ -165,17 +270,16 @@
  "open" "xdg-open $*"
  "xo" "xdg-open $*"
  "g" "git --no-pager $*"
- "c" "clear-scrollback"
- )
+ "c" "clear-scrollback")
 
 ;; EXWM config
 (defun shutdown ()
   (interactive)
-  (shell-command "sudo shutdown -h now"))
+  (shell-command "shutdown -h now"))
 
 (defun reboot ()
   (interactive)
-  (shell-command "sudo reboot"))
+  (shell-command "reboot"))
 
 (defun logout ()
   (interactive)
@@ -191,26 +295,30 @@
   (interactive)
   (save-excursion
     (set-process-sentinel
-     (start-process "xtrlock" nil "xtrlock")
+     (start-process "slock" nil "slock")
      '(lambda (process event)
         (zone-leave-me-alone)))
     (zone-when-idle 1)))
 
 (defun screenshot-full ()
   (interactive)
-  (shell-command "scrot ~/Pictures/screenshot/pic-$(date '+%y%m%d-%H%M-%S').png"))
+  (shell-command
+   "scrot ~/Pictures/screenshot/pic-$(date '+%y%m%d-%H%M-%S').png"))
 
 (defun screenshot-current-window ()
   (interactive)
-  (shell-command "scrot -f ~/Pictures/screenshot/pic-$(date '+%y%m%d-%H%M-%S').png"))
+  (shell-command
+   "scrot -f ~/Pictures/screenshot/pic-$(date '+%y%m%d-%H%M-%S').png"))
 
 (defun screenshot-select ()
   (interactive)
-  (shell-command "scrot --select ~/Pictures/screenshot/pic-$(date '+%y%m%d-%H%M-%S').png"))
+  (shell-command
+   "scrot --select ~/Pictures/screenshot/pic-$(date '+%y%m%d-%H%M-%S').png"))
 
 (defun screenshot-clip
   (interactive)
-  (shell-command "scrot -e 'xclip -selection clipboard -t image/png -i $f' -s")
+  (shell-command
+   "scrot -e 'xclip -selection clipboard -t image/png -i $f' -s")
   )
 (use-package! wallpaper
   :hook ((exwm-randr-screen-change . wallpaper-set-wallpaper)
@@ -249,7 +357,7 @@
   (interactive)
   (with-current-buffer (window-buffer)
     (when (eq major-mode 'exwm-mode)
-      (if (equal (second (second mode-line-process)) "line")
+      (if (equal (nth 1 (nth 1 mode-line-process)) "line")
           (yeh/exwm-input-char-mode)
         (yeh/exwm-input-line-mode)))))
 
@@ -269,13 +377,19 @@
         (lambda (index) (number-to-string (1+ index))))
   (progn
     (exwm-input-set-key (kbd "<s-tab>")  #'exwm/jump-to-last-exwm)
+    (exwm-input-set-key (kbd "<s-return>")  #'(lambda () (interactive)
+                                                ;; (start-process-shell-command "St" nil "st")
+                                                (+eshell/here)
+                                                ))
     (exwm-input-set-key (kbd "s-w")  #'(lambda ()
                                          (interactive)
                                          (start-process-shell-command
-                                          "Brave-browser" nil "braven")))
+                                          "Brave-browser" nil "brave")))
     (exwm-input-set-key (kbd "s-d") #'(lambda (command)
-                                        (interactive (list (read-shell-command "Command: ")))
-                                        (start-process-shell-command command nil command)))
+                                        (interactive (list (read-shell-command
+                                                            "> ")))
+                                        (start-process-shell-command
+                                         command nil command)))
     (exwm-input-set-key (kbd "s-=") #'desktop-environment-volume-increment)
     (exwm-input-set-key (kbd "s--") #'desktop-environment-volume-decrement)
     (exwm-input-set-key (kbd "s-i") #'yeh/exwm-input-toggle-mode)
@@ -315,6 +429,7 @@
   :if (display-graphic-p)
   :after exwm
   :init
+  (desktop-environment-mode)
   (setq desktop-environment-screenshot-directory "~/Pictures/screenshot"
         desktop-environment-update-exwm-global-keys :global)
   :config
@@ -324,8 +439,7 @@
   :if (display-graphic-p)
   :commands (xdg-config-dirs xdg-config-home xdg-desktop-read-file))
 
-(require 'exwm)
-(require 'exwm-config)
+;; (require 'exwm)
+;; (require 'exwm-config)
 (exwm-enable)
 (require 'exwm-systemtray)
-(exwm-systemtray-enable)

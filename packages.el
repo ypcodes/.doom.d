@@ -55,3 +55,16 @@
 (package! desktop-environment)
 (package! xdg)
 (package! wallpaper)
+(package! lsp-ui)
+(package! theme-magic)
+(package! rime
+  :recipe (:host github
+                 :repo "DogLooksGood/emacs-rime"
+                 :files ("*.el" "Makefile" "lib.c")))
+
+(package! nov)
+(package! nov-xwidget
+  :recipe (:host github
+                 :repo "chenyanming/nov-xwidget"
+                 :files ("*.el"))
+  )
