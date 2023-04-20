@@ -55,16 +55,9 @@
 (package! desktop-environment)
 (package! xdg)
 (package! wallpaper)
-(package! lsp-ui)
-(package! theme-magic)
-(package! rime
-  :recipe (:host github
-                 :repo "DogLooksGood/emacs-rime"
-                 :files ("*.el" "Makefile" "lib.c")))
-
+(package! super-save)
+(package! projectile)
+(package! gptel)
+(package! zeal-at-point)
+(package! circadian)
 (package! nov)
-(package! nov-xwidget
-  :recipe (:host github
-                 :repo "chenyanming/nov-xwidget"
-                 :files ("*.el"))
-  )
