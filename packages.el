@@ -50,14 +50,27 @@
 ;(unpin! t)
 
 (package! olivetti)
+
+;; exwm
 (package! exwm)
+(package! app-launcher
+  :recipe (:host github :repo "SebastienWae/app-launcher"))
 (package! xelb)
 (package! desktop-environment)
 (package! xdg)
 (package! wallpaper)
 (package! super-save)
-(package! projectile)
 (package! gptel)
 (package! zeal-at-point)
 (package! circadian)
 (package! nov)
+(package! nov-xwidget
+  :recipe (:host github :repo "chenyanming/nov-xwidget"))
+(package! rime)
+(package! go-translate
+  :recipe (:host github :repo "lorniu/go-translate"))
+(package! mpvi
+  :recipe (:host github :repo "lorniu/mpvi"))
+(package! mind-wave
+  :recipe (:host github :repo "manateelazycat/mind-wave"))
+(package! org-attach-screenshot)

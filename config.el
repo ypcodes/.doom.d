@@ -21,13 +21,13 @@
 ;; See 'C-h v doom-font' for documentation and more examples of what they
 ;; accept. For example:
 ;;
-(setq! doom-font (font-spec :family "MesloLGM Nerd Font"
+(setq! doom-font (font-spec :family "FiraCode Nerd Font"
                             :size 16
                             :weight 'semi-light)
-      doom-variable-pitch-font (font-spec :family "FiraCode Nerd Font"
-                                          :size 16)
-      doom-unicode-font (font-spec :family "FiraCode Nerd Font" :size 16))
-;;
+       doom-variable-pitch-font (font-spec :family "FiraCode Nerd Font"
+                                           :size 16)
+       doom-unicode-font (font-spec :family "FiraCode Nerd Font" :size 16))
+
 ;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
 ;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
 ;; refresh your font settings. If Emacs still can't find your font, it likely
@@ -36,6 +36,7 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
+
 (setq doom-theme 'doom-one)
 (setq fancy-splash-image "~/.config/doom/banner.jpg")
 ;; This determines the style of line numbers in effect. If set to `nil', line
@@ -44,15 +45,15 @@
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
-(setq org-directory "~/org/"
-      org-ellipsis " ▾ "
-      )
-(setq org-html-head-extra "<link rel=\"stylesheet\" href=\"https://unpkg.com/marx-css/css/marx.css\" type=\"text/css\">")
-(add-hook 'prog-mode-hook #'which-function-mode)
-(setq-default mode-line-format (cons '(:eval (which-function-mode)) mode-line-format))
-(setq which-func-format (quote (:propertize which-func-current :weight bold)))
 ;; (add-hook! 'solaire-mode-hook (set-face-background 'internal-border (face-background 'fringe)))
-;; (set-frame-parameter nil 'internal-border-width 60)
+;; (set-frame-parameter nil 'internal-border-width 10)
+
+(setq default-frame-alist '((width . 90)
+                            (height . 50)
+                            (alpha-background . 90)))
+(doom/set-frame-opacity '90)
+(set-frame-parameter (selected-frame) 'alpha '(90 . 100))
+(add-to-list 'default-frame-alist '(alpha . (90 . 100)))
 
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
@@ -86,19 +87,23 @@
 ;;
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
-(setq gc-cons-threshold (* 50 1000 1000))
+(setq gc-cons-threshold (* 50 1000 1000)
+      read-process-output-max (* 1024 1024))
+
 (setq-default custom-file (expand-file-name ".custom.el" doom-user-dir))
 (when (file-exists-p custom-file)
   (load custom-file))
 
 (global-undo-tree-mode t)
 
-(display-time-mode t)
-(display-battery-mode 1)
-(doom/set-frame-opacity '90)
-(setq initial-major-mode 'org-mode)
+;; (display-time-mode t)
+;; (display-battery-mode 1)
+
+(add-hook 'prog-mode-hook #'which-function-mode)
+
+(setq which-func-format (quote (:propertize which-func-current :weight bold)))
+(setq-default mode-line-format (cons '(:eval (which-function-mode)) mode-line-format))
 (setq browse-url-handlers '(("\\`file:" . browse-url-default-browser)))
-(setq-default default-input-method "rime")
 
 ;; Profile emacs startup
 (setq confirm-kill-emacs nil
@@ -107,21 +112,22 @@
 (after! centaur-tabs
   (setq centaur-tabs-style "wave"))
 
-
-;; set `i' enter emacs-state
-(after! evil
-  (defalias 'evil-insert-state 'evil-emacs-state)
-  (define-key evil-emacs-state-map (kbd "<escape>") 'evil-normal-state)
-  (setq evil-emacs-state-cursor 'bar))
+;; hit `i' enter emacs-state
+(when (display-graphic-p)
+  (after! evil
+    (defalias 'evil-insert-state 'evil-emacs-state)
+    (define-key evil-emacs-state-map (kbd "<escape>") 'evil-normal-state)
+    (setq evil-emacs-state-cursor 'bar)))
 
 (after! ox-hugo
   (setq org-hugo-base-dir "~/Dev/blog")
   (setq org-hugo-auto-set-lastmod t))
 
 (use-package! gptel
- :config
- (setq! gptel-api-key "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")
- (setq! gptel-default-mode 'org-mode))
+  :config
+  (setq! gptel-api-key "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")
+  (setq! gptel-mode 'org-mode))
+
 
 (map! :leader
       :desc "Zeal at point"
@@ -197,8 +203,6 @@
 
   (add-hook 'nov-mode-hook #'+nov-mode-setup))
 
-(setq-default gdb-many-windows t)
-(setq-default gdb-show-main t)
 (after! dap-mode
   (setq dap-gdb-lldb-command "gdb --interpreter=mi")
   (require 'dap-gdb-lldb)
@@ -212,8 +216,11 @@
   (interactive)
   (let ((default-directory (file-name-directory buffer-file-name)))
     (start-process "st" nil "st")))
-(after! company
-  (setq company-idle-delay nil))
+
+(map! :leader
+      :desc "Launch St here"
+      "o s t" #'launch-st-here)
+
 
 (setq evil-ex-substitute-global t)
 
@@ -224,7 +231,13 @@
 (after! org (setq org-hide-emphasis-markers t))
 (after! org
   (setq org-log-done t)
-  (setq org-log-into-drawer t))
+  (setq org-log-into-drawer t)
+  (setq org-directory "~/org/"
+        org-ellipsis " ▾ ")
+  (setq org-html-head-extra "<link rel=\"stylesheet\" href=\"https://unpkg.com/marx-css/css/marx.css\" type=\"text/css\">")
+  )
+
+(setq initial-major-mode 'org-mode)
 
 ;; Enable the auto-change theme feature
 
@@ -236,37 +249,37 @@
 ;;   ;; Activate the auto-change theme feature
 ;;   (circadian-setup))
 
-;; (use-package! rime
-;;   :config
-;;   (setq rime-user-data-dir "~/.config/fcitx/rime")
-;;   ;; (setq rime-posframe-properties
-;;   ;;       (list :background-color "#333333"
-;;   ;;             :foreground-color "#dcdccc"
-;;   ;;             ;; :font "WenQuanYi Micro Hei Mono-15"
-;;   ;;             :internal-border-width 10))
-;;   (setq rime-show-candidate 'posframe)
-;;   (setq rime-inline-ascii-trigger 'shift-l)
-;;   (define-key rime-mode-map (kbd "M-j") 'rime-force-enable)
-;;   (setq mode-line-mule-info '((:eval (rime-lighter))))
-;;   (setq rime-disable-predicates
-;;         '(rime-predicate-evil-mode-p
-;;           rime-predicate-after-alphabet-char-p
-;;           rime-predicate-prog-in-code-p
-;;           rime-predicate-after-alphabet-char-p)))
-;; (use-package! lsp-ui)
+(use-package! rime
+  :config
+  (setq rime-user-data-dir "~/.config/fcitx/rime")
+  ;; (setq rime-posframe-properties
+  ;;       (list :background-color "#333333"
+  ;;             :foreground-color "#dcdccc"
+  ;;             ;; :font "WenQuanYi Micro Hei Mono-15"
+  ;;             :internal-border-width 10))
+  (setq default-input-method "rime")
+  (setq rime-show-candidate 'posframe)
+  (setq rime-inline-ascii-trigger 'shift-l)
+  (define-key rime-mode-map (kbd "M-j") 'rime-force-enable)
+  (setq mode-line-mule-info '((:eval (rime-lighter))))
+  (setq rime-disable-predicates
+        '(rime-predicate-evil-mode-p
+          rime-predicate-after-alphabet-char-p
+          rime-predicate-prog-in-code-p
+          rime-predicate-after-alphabet-char-p)))
 
 ;; (after! vterm
 ;;   (define-key vterm-mode-map (kbd "<C-backspace>")
 ;;     (lambda () (interactive) (vterm-send-key (kbd "C-w")))))
 
-;; (use-package! super-save
-;;   :config
-;;   (super-save-mode +1)
-;;   (setq auto-save-default t)
-;;   (setq super-save-auto-save-when-idle t)
-;;   (add-to-list 'super-save-triggers 'ace-window)
-;;   ;; save on find-file
-;;   (add-to-list 'super-save-hook-triggers 'find-file-hook))
+(use-package! super-save
+  :config
+  (super-save-mode +1)
+  (setq auto-save-default t)
+  (setq super-save-auto-save-when-idle t)
+  (add-to-list 'super-save-triggers 'ace-window)
+  ;; save on find-file
+  (add-to-list 'super-save-hook-triggers 'find-file-hook))
 
 ;; (use-package! nov
 ;;   :config
@@ -276,74 +289,67 @@
 ;;   ;;                                          :height 1.0))
 ;; (add-hook 'nov-mode-hook 'my-nov-font-setup)))
 
-;; (use-package! nov-xwidget
-;;   :after nov
+(use-package! mind-wave)
+
+(use-package! nov-xwidget
+  :after nov
+  :config
+  (define-key nov-mode-map (kbd "o") 'nov-xwidget-view)
+  (add-hook 'nov-mode-hook 'nov-xwidget-inject-all-files))
+
+(use-package! eaf
+  :load-path "~/.elisp/emacs-application-framework"
+  ;; :init
+  ;; :custom
+  ;; (eaf-browser-continue-where-left-off t)
+  ;; (eaf-browser-enable-adblocker t)
+  ;; (browse-url-browser-function 'eaf-open-browser) ;; Make EAF Browser my default browser
+  :config
+  (defalias 'browse-web #'eaf-open-browser)
+  ;; (setq eaf-browser-continue-where-left-off t)
+  (require 'eaf-browser)
+  (require 'eaf-pdf-viewer)
+  (require 'eaf-video-player)
+  ;; (require 'eaf-markdown-previewer)
+
+  (when (display-graphic-p)
+    (require 'eaf-all-the-icons))
+
+  (require 'eaf-evil)
+  (setq eaf-evil-leader-key "C-SPC")
+  (setq eaf-browser-dark-mode nil)
+  (setq browse-url-browser-function 'eaf-open-browser)
+  (setq eaf-browser-enable-adblocker t)
+  (setq eaf-browser-default-search-engine "google")
+
+  (setq eaf-proxy-type "http")
+  (setq eaf-proxy-host "127.0.0.1")
+  (setq eaf-proxy-port "7890")
+  (map! :leader
+        :desc "Eaf Search it"
+        "o s e" #'eaf-search-it))
+
+(setq +latex-viewers nil)
+(eval-after-load "tex"
+  '(progn
+     (add-to-list 'TeX-command-list '("XeLaTeX" "%`xelatex --synctex=1%(mode)%' %t" TeX-run-TeX nil t))
+     (add-to-list 'TeX-view-program-list '("eaf" eaf-pdf-synctex-forward-view))
+     (add-to-list 'TeX-view-program-selection '(output-pdf "eaf"))))
+
+;; (use-package! guess-word
 ;;   :config
-;;   (define-key nov-mode-map (kbd "o") 'nov-xwidget-view)
-;;   (add-hook 'nov-mode-hook 'nov-xwidget-inject-all-files))
+;;   (setq guess-word-org-file (f-expand "~/org/esl.org")))
 
-;; (use-package! eaf
-;;   :load-path "~/.elisp/emacs-application-framework"
-;;   :init
-;;   :custom
-;;   (eaf-browser-continue-where-left-off t)
-;;   (eaf-browser-enable-adblocker t)
-;;   (browse-url-browser-function 'eaf-open-browser) ;; Make EAF Browser my default browser
-;;   :config
-
-;;   (defalias 'browse-web #'eaf-open-browser)
-;;   (setq eaf-browser-continue-where-left-off t)
-;;   ;; (require 'eaf-file-manager)
-;;   ;; (require 'eaf-music-player)
-;;   ;; (require 'eaf-image-viewer)
-;;   ;; (require 'eaf-camera)
-;;   ;; (require 'eaf-demo)
-;;   ;; (require 'eaf-terminal)
-;;   ;; (require 'eaf-video-player)
-;;   ;; (require 'eaf-vue-demo)
-;;   ;; (require 'eaf-file-sender)
-;;   ;; (require 'eaf-mindmap)
-;;   ;; (require 'eaf-jupyter)
-;;   ;; (require 'eaf-org-previewer)
-;;   ;; (require 'eaf-system-monitor)
-;;   ;; (require 'eaf-rss-reader)
-;;   ;; (require 'eaf-file-browser)
-;;   ;; (require 'eaf-mail)
-;;   ;; (require 'eaf-git)
-;;   (require 'eaf-browser)
-;;   (require 'eaf-pdf-viewer)
-;;   (require 'eaf-markdown-previewer)
-;;   (require 'eaf-org-previewer)
-;;   (require 'eaf-airshare)
-;;   (require 'eaf-terminal)
-;;   (require 'eaf-file-manager)
-;;   ;; (require 'eaf-netease-cloud-music)
-;;   (require 'eaf-video-player)
-;;   (require 'eaf-image-viewer)
-
-;;   (when (display-graphic-p)
-;;     (require 'eaf-all-the-icons))
-
-;;   (require 'eaf-evil)
-;;   (setq eaf-browser-dark-mode nil)
-;;   (setq eaf-terminal-dark-mode nil)
-;;   (setq eaf-pdf-dark-mode "ignore") ; see below
-;;   (defun adviser-find-file (orig-fn file &rest args)
-;;     (let ((fn (if (commandp 'eaf-open) 'eaf-open orig-fn)))
-;;     (pcase (file-name-extension file)
-;;       ("pdf"  (apply fn file nil))
-;;       ("epub" (apply fn file nil))
-;;       (_      (apply orig-fn file args))
-;;       )))
-;;   (advice-add #'find-file :around #'adviser-find-file)
-;;   (setq browse-url-browser-function 'eaf-open-browser)
-;;   (defalias 'browse-web #'eaf-open-browser)
-;;   (setq eaf-browser-enable-adblocker t)
-;;   (setq eaf-browser-default-search-engine "google")
-;;   (setq eaf-proxy-type "http")
-;;   (setq eaf-proxy-host "127.0.0.1")
-;;   (setq eaf-proxy-port "7890")
-;;   (global-set-key (kbd "C-s") 'eaf-search-it))
+;; Use clangd as the default language server for C/C++
+(setq lsp-log-io nil)
+(after! lsp-clangd
+  (setq lsp-clients-clangd-args '("-j=8"
+                                  "-background-index"
+                                  "-log=error"
+                                  "--clang-tidy"
+                                  "--completion-style=detailed"
+                                  "--header-insertion=never"))
+  (set-lsp-priority! 'clangd 2))
 
 ;; (set-eshell-alias!
 ;;  "yt" "youtube-dl $*"
@@ -354,22 +360,66 @@
 ;;  "g" "git --no-pager $*"
 ;;  "c" "clear-scrollback")
 
-;; ;; EXWM config
-;; (defun shutdown ()
-;;   (interactive)
-;;   (shell-command "shutdown -h now"))
+(after! go-translate
+  ;; 配置多个翻译语言对
+  (setq gts-translate-list '(("en" "zh") ("zh" "en")))
 
-;; (defun reboot ()
-;;   (interactive)
-;;   (shell-command "reboot"))
+  ;; 配置默认的 translator
+  ;; 这些配置将被 gts-do-translate 命令使用
+  (setq gts-default-translator
+        (gts-translator
 
-;; (defun logout ()
-;;   (interactive)
-;;   (kill-emacs))
+         :picker ; 用于拾取初始文本、from、to，只能配置一个
 
-;; (defun display-off ()
-;;   (interactive)
-;;   (shell-command "xset dpms force off"))
+         ;;(gts-noprompt-picker)
+         ;;(gts-noprompt-picker :texter (gts-whole-buffer-texter))
+         (gts-prompt-picker)
+         ;;(gts-prompt-picker :single t)
+         ;;(gts-prompt-picker :texter (gts-current-or-selection-texter) :single t)
+
+         :engines ; 翻译引擎，可以配置多个。另外可以传入不同的 Parser 从而使用不同样式的输出
+
+         (list
+          (gts-bing-engine)
+          ;;(gts-google-engine)
+          ;;(gts-google-rpc-engine)
+          ;;(gts-deepl-engine :auth-key [YOUR_AUTH_KEY] :pro nil)
+          ;; (gts-google-engine :parser (gts-google-summary-parser))
+          ;;(gts-google-engine :parser (gts-google-parser))
+          ;;(gts-google-rpc-engine :parser (gts-google-rpc-summary-parser))
+          ;; (gts-google-rpc-engine :parser (gts-google-rpc-parser))
+          (gts-youdao-dict-engine)
+          ;;(gts-stardict-engine)
+          )
+
+         :render ; 渲染器，只能一个，用于输出结果到指定目标。如果使用 childframe 版本的，需自行安装 posframe
+
+         ;; (gts-buffer-render)
+         (gts-posframe-pop-render)
+         ;;(gts-posframe-pop-render :backcolor "#333333" :forecolor "#ffffff")
+         ;;(gts-posframe-pin-render)
+         ;;(gts-posframe-pin-render :position (cons 1200 20))
+         ;;(gts-posframe-pin-render :width 80 :height 25 :position (cons 1000 20) :forecolor "#ffffff" :backcolor "#111111")
+         ;;(gts-kill-ring-render)
+
+         ;; translate
+         :splitter ; 分割器，可选。如果设置了，将会分段按照提供的规则分段进行翻译。可以选择定制 Render 混合输出分段翻译的结果
+
+         (gts-paragraph-splitter)))
+  (map! :leader
+        :desc "Translation at point(en to zh and zh to en)"
+        "o s T" #'gts-do-translate))
+
+
+(use-package! org-attach-screenshot
+  :bind ("<f6> s" . org-attach-screenshot)
+  :config
+  (setq org-attach-screenshot-dirfunction
+        (lambda ()
+          (progn (cl-assert (buffer-file-name))
+               (concat (file-name-sans-extension (buffer-file-name))
+                "-att")))
+        org-attach-screenshot-command-line "maim -u -s %f"))
 
 ;; (defun lock-screen ()
 ;;   "Lock screen using (zone) and xtrlock
@@ -412,6 +462,7 @@
 ;;   :config
 ;;   (unless (executable-find "feh")
 ;;     (display-warning 'wallpaper "External command `feh' not found!")))
+
 ;; (defvar exwm--toggle-workspace 0
 ;;   "Previously selected workspace. Used with `exwm/jump-to-last-exwm'.")
 
@@ -446,6 +497,56 @@
 ;; (use-package! xelb
 ;;   :if (display-graphic-p))
 
+;; (defun exwm-update-class ()
+;;   "Update `exwm-class-name' to current class name."
+;;   (interactive)
+;;   (let* ((class (if exwm-class-name
+;;                     exwm-class-name
+;;                   (replace-regexp-in-string
+;;                    "\\(.*\\) - .*$"
+;;                    "\\1"
+;;                    (downcase (nth 4 (assq ?_ exwm--process-attributes)))))))
+;;     (setq exwm-class-name class)))
+
+;; (defun exwm-update-title ()
+;;   "Update `exwm-title' to current window title."
+;;   (interactive)
+;;   (setq exwm-title (replace-regexp-in-string
+;;                     "\n$" ""
+;;                     (shell-command-to-string "xdotool getwindowname $(xdotool getwindowfocus)"))))
+
+;; ;; (defun exwm-update-window-config ()
+;; ;;   "Update the window configuration based on the current buffer."
+;; ;;   (interactive)
+;; ;;   (let ((config (cdr (assq major-mode exwm-config-major-mode-alist))))
+;; ;;     (when config
+;; ;;       (apply config))))
+
+;; (add-hook 'exwm-update-class-hook #'exwm-update-title)
+;; ;; (add-hook 'exwm-update-title-hook #'exwm-update-window-config)
+;; (add-hook 'exwm-update-title-hook #'exwm-update-class)
+
+
+;; (use-package! exwm-systemtray
+;;   :if (display-graphic-p)
+;;   :after exwm
+;;   :config
+;;   (exwm-systemtray-enable))
+
+;; (use-package! desktop-environment
+;;   :if (display-graphic-p)
+;;   :after exwm
+;;   :init
+;;   (desktop-environment-mode)
+;;   (setq desktop-environment-screenshot-directory "~/Pictures/screenshot"
+;;         desktop-environment-update-exwm-global-keys :global)
+;;   :config
+;;   (desktop-environment-mode))
+
+;; (use-package! xdg
+;;  :if (display-graphic-p)
+;;  :commands (xdg-config-dirs xdg-config-home xdg-desktop-read-file))
+
 ;; (use-package! exwm
 ;;   :if (display-graphic-p)
 ;;   :init
@@ -455,6 +556,9 @@
 ;;   (setq window-divider-default-right-width 1)
 ;;   :config
 ;;   (require 'exwm-config)
+;;   (require 'exwm-xim)
+;;   (exwm-config-misc)
+;;   (exwm-xim-enable)
 ;;   (setq exwm-workspace-index-map
 ;;         (lambda (index) (number-to-string (1+ index))))
 ;;   (progn
@@ -462,6 +566,7 @@
 ;;     (exwm-input-set-key (kbd "<s-return>")  #'(lambda () (interactive)
 ;;                                                 (start-process-shell-command "St" nil "st")
 ;;                                                 ;; (+eshell/here)
+;;                                                 ;; (+vterm/here nil)
 ;;                                                 ))
 ;;     (exwm-input-set-key (kbd "s-w")  #'(lambda ()
 ;;                                          (interactive)
@@ -472,10 +577,11 @@
 ;;                                                             "> ")))
 ;;                                         (start-process-shell-command
 ;;                                          command nil command)))
+;;     (exwm-input-set-key (kbd "s-p") #'app-launcher-run-app)
 ;;     (exwm-input-set-key (kbd "s-=") #'desktop-environment-volume-increment)
 ;;     (exwm-input-set-key (kbd "s--") #'desktop-environment-volume-decrement)
 ;;     (exwm-input-set-key (kbd "s-i") #'yeh/exwm-input-toggle-mode)
-;;     (mapcar (lambda (i)
+;;     (mapc (lambda (i)
 ;;               (exwm-input-set-key (kbd (format "s-%d" i))
 ;;                                   #'(lambda ()
 ;;                                       (interactive)
@@ -499,29 +605,5 @@
 ;;   (add-hook 'exwm-update-title-hook
 ;;             (lambda ()
 ;;               (exwm-workspace-rename-buffer exwm-title)))
+
 ;;   (exwm-enable))
-
-;; (use-package! exwm-systemtray
-;;   :if (display-graphic-p)
-;;   :after exwm
-;;   :config
-;;   (exwm-systemtray-enable))
-
-;; (use-package! desktop-environment
-;;   :if (display-graphic-p)
-;;   :after exwm
-;;   :init
-;;   (desktop-environment-mode)
-;;   (setq desktop-environment-screenshot-directory "~/Pictures/screenshot"
-;;         desktop-environment-update-exwm-global-keys :global)
-;;   :config
-;;   (desktop-environment-mode))
-
-;; (use-package! xdg
-;;   :if (display-graphic-p)
-;;   :commands (xdg-config-dirs xdg-config-home xdg-desktop-read-file))
-
-;; ;; (require 'exwm)
-;; ;; (require 'exwm-config)
-;; (exwm-enable)
-;; (require 'exwm-systemtray)
