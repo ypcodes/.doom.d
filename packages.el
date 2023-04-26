@@ -50,7 +50,6 @@
 ;(unpin! t)
 
 (package! olivetti)
-
 ;; exwm
 (package! exwm)
 (package! app-launcher
